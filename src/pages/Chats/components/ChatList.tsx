@@ -20,31 +20,53 @@ import ChatTitle from "./chatTitle";
 import ChatLastestStatus from "./ChatLastestStatus";
 import { chats } from "../data";
 
+type ChatType = {
+  id: number;
+  name: string;
+  message: string;
+  date: Date;
+  count?: number;
+};
 
-const ChatList = (): JSX.Element => {
+type ChatSelcetType ={
+  joinChat: (chatId: number) => void;
+};
 
+
+const ChatList = (props: ChatSelcetType): JSX.Element => {
+  const { joinChat} = props;
   const [chatList, setChatList] = useState(chats);
 
-    
+  const loadChatList = async () => {
+    const { data } = await  axios.get<ChatType[]>(
+      "http://localhost:5000/chats",
+      {
+        params: {
+          userId: 1,
+        },
+      }
+    );
+    setChatList(data);
+  };
+
+  useEffect(() => {
+    loadChatList();
+  }, []);
+
   return (
     <List>
-    {chatList.map((chats) => {
+    {chatList.map((chat) => {
       return (
-        <section key={chats.id}>
-        <Grid item sm={12}>
-          <ListItemButton>
+          <ListItemButton key={chat.id} onClick={() => joinChat(chat.id)}>
             <ListItemAvatar>
               <Avatar>
                 <ImageIcon />
               </Avatar>
             </ListItemAvatar>
-            <ListItemText primary={<ChatTitle name={chats.name} date={chats.date}/>} secondary={<ChatLastestStatus message={chats.message}/>} />
+            <ListItemText primary={<ChatTitle name={chat.name} date={chat.date}/>} secondary={<ChatLastestStatus message={chat.message} count={chat.count}/>} />
           </ListItemButton>
-        </Grid>
-      </section>
       );
-    }
-  )};
+    })};
   </List>
   )
 };

@@ -21,6 +21,7 @@ import FriendAdd from "./components/FriendAdd";
 import Modal from "@mui/material/Modal";
 import * as React from "react";
 import axios from "axios";
+import { NoSubstitutionTemplateLiteral } from "typescript";
 
 type FriendType = {
   id: number;
@@ -28,11 +29,22 @@ type FriendType = {
   statusMessage: string;
 };
 
-const Friends = (): JSX.Element => {
+type ChatType ={
+  chatId: number;
+};
+
+type FriendTabType = {
+  changeTab: (chatId: number) => void;
+};
+
+const Friends = (props: FriendTabType): JSX.Element => {
+  const {changeTab} = props;
   const [open, setOpen] = useState(false);
   const [originalFriends, setOriginalFriends] = useState<FriendType[]>([]);
   const [friendList, setFriendList] = useState<FriendType[]>([]);
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const [friend, setfriend] = useState<number | null>(null);
+
 
   const Search_friend = (event: ChangeEvent<HTMLInputElement>) => {
     const search = event.currentTarget.value;
@@ -47,6 +59,7 @@ const Friends = (): JSX.Element => {
 
     setFriendList(filteredFriends);
   };
+
 
   const finishAddFriend = async () => {
     await getFriendList();
@@ -80,6 +93,17 @@ const Friends = (): JSX.Element => {
     setAnchor(null);
   }
 
+  const makeChat= async  () => {
+    const {data} = await axios.post<ChatType>("http://loaclhost:5000/chats",{
+      userId: 1,
+      friendId: friend,
+    });
+
+    const { chatId } = data;
+    changeTab(chatId);
+    closeMenu();
+  };
+
 
   return (
     <Container>
@@ -95,7 +119,7 @@ const Friends = (): JSX.Element => {
            horizontal: "center",
          }}
          >
-           <MenuItem>채팅하기</MenuItem>
+           <MenuItem onClick={makeChat}>채팅하기</MenuItem>
          </Menu>
         
       <Box>
